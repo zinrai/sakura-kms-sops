@@ -21,12 +21,8 @@ This way, SAKURA Cloud KMS becomes the central key management system, while SOPS
 
 ## Prerequisites
 
-- `sops` in PATH
-- `[sakura-kms](https://github.com/zinrai/sakura-kms)` in PATH
-- Environment variables for sakura-kms:
-  - `SAKURACLOUD_ACCESS_TOKEN`
-  - `SAKURACLOUD_ACCESS_TOKEN_SECRET`
-  - `SAKURACLOUD_ZONE`
+- [sops](https://github.com/getsops/sops)
+- [sakura-kms](https://github.com/zinrai/sakura-kms)
 
 ## Usage
 
