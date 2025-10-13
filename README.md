@@ -8,13 +8,13 @@ A tool to use [SOPS](https://github.com/getsops/sops) with [SAKURA Cloud KMS](ht
 
 However, SOPS does support [age](https://github.com/FiloSottile/age) encryption through the `SOPS_AGE_KEY_CMD` environment variable, which allows executing an external command to retrieve the age secret key.
 
-This led to the idea: **if we encrypt the age secret key with SAKURA Cloud KMS and decrypt it on-demand using the `SOPS_AGE_KEY_CMD` mechanism, we can effectively use SOPS with SAKURA Cloud KMS as the root of trust.**
+This led to the idea: **if we encrypt the age secret key with SAKURA Cloud KMS and decrypt it on-demand using th `SOPS_AGE_KEY_CMD` mechanism, we can effectively use SOPS with SAKURA Cloud KMS as the root of trust.**
 
 `sakura-kms-sops` implements this bridge approach:
 
 1. The age secret key is encrypted and stored using SAKURA Cloud KMS
 2. When SOPS needs to decrypt files, it calls the command specified in `SOPS_AGE_KEY_CMD`
-3. This command uses `[sakura-kms](https://github.com/zinrai/sakura-kms)` to decrypt the age secret key
+3. This command uses [sakura-kms](https://github.com/zinrai/sakura-kms) to decrypt the age secret key
 4. SOPS receives the decrypted age key and uses it to decrypt the actual secrets
 
 This way, SAKURA Cloud KMS becomes the central key management system, while SOPS continues to work with its familiar workflow.
@@ -24,35 +24,38 @@ This way, SAKURA Cloud KMS becomes the central key management system, while SOPS
 - [sops](https://github.com/getsops/sops)
 - [sakura-kms](https://github.com/zinrai/sakura-kms)
 
+## Configuration
+
+Set the age key file path:
+
+```bash
+$ export SAKURACLOUD_KMS_KEY_FILE="age-key.kms.enc"
+```
+
 ## Usage
 
 ```bash
-$ sakura-kms-sops.sh --resource-id ID --age-key FILE -- sops [args...]
+$ sakura-kms-sops.sh [sops arguments...]
 ```
-
-### Options
-
-- `--resource-id`: KMS key resource ID (required)
-- `--age-key`: Encrypted age key file path (required)
 
 ### Examples
 
 Edit encrypted file:
 
 ```bash
-$ sakura-kms-sops.sh --resource-id 110000000000 --age-key key.kms.enc -- sops edit secrets.yaml
+$ sakura-kms-sops.sh edit secrets.yaml
 ```
 
 Decrypt file:
 
 ```bash
-$ sakura-kms-sops.sh --resource-id 110000000000 --age-key key.kms.enc -- sops -d secrets.yaml
+$ sakura-kms-sops.sh -d secrets.yaml
 ```
 
 Encrypt file:
 
 ```bash
-$ sakura-kms-sops.sh --resource-id 110000000000 --age-key key.kms.enc -- sops -e plain.yaml > encrypted.yaml
+$ sakura-kms-sops.sh -e plain.yaml > encrypted.yaml
 ```
 
 ## Setup
@@ -66,7 +69,7 @@ $ age-keygen -o age-key.txt
 ### 2. Encrypt the age secret key with SAKURA Cloud KMS
 
 ```bash
-$ cat age-key.txt | sakura-kms encrypt -output age-key.kms.enc -resource-id 110000000000
+$ cat age-key.txt | sakura-kms encrypt -output age-key.kms.enc
 ```
 
 ### 3. Configure sops to use the age public key
@@ -81,7 +84,7 @@ creation_rules:
 ### 4. Use sakura-kms-sops
 
 ```bash
-$ sakura-kms-sops.sh --resource-id 110000000000 --age-key age-key.kms.enc -- sops edit secrets.yaml
+$ sakura-kms-sops.sh edit secrets.yaml
 ```
 
 ## How It Works
